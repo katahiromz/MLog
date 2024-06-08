@@ -1,4 +1,4 @@
-// MLog.h --- A simple logger library for C++/Win32 by katahiromz
+// MLog.h --- A simple logging library for C++/Win32 by katahiromz
 // License: MIT
 #pragma once
 
