@@ -147,6 +147,15 @@ void mlog_unlock(PMLOG pmlog)
     LeaveCriticalSection(&pmlog->csLock);
 }
 
+static inline
+LPCTSTR mlog_log_file(void)
+{
+    PMLOG pmlog = mlog_init();
+    if (!pmlog)
+        return NULL;
+    return pmlog->log_filename;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // mlog_write...
 
