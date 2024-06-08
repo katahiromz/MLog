@@ -6,6 +6,6 @@ A simple logging library for Win32/C++ by katahiromz.
 #include "MLog/MLog.h"
 ```
 
-You can use `mlog_trace_a` like C's `printf` for logging.
+You can use `mlog_trace_a` function like C's `printf` for logging.
 
 License: MIT
