@@ -195,9 +195,6 @@ void mlog_write_a(PMLOG pmlog, const char *ptr)
     WCHAR buf[MLOG_MAX_BUF];
 #endif
 
-    if (!pmlog->bEnabled)
-        return;
-
 #ifdef MLOG_DEBUG_OUTPUT
     OutputDebugStringA(ptr);
     return;
@@ -231,9 +228,6 @@ void mlog_write_w(PMLOG pmlog, const WCHAR *ptr)
 #ifndef MLOG_UTF16_OUTPUT
     CHAR buf[MLOG_MAX_BUF];
 #endif
-
-    if (!pmlog->bEnabled)
-        return;
 
 #ifdef MLOG_DEBUG_OUTPUT
     OutputDebugStringW(ptr);
@@ -278,7 +272,7 @@ void mlog_trace_ex_a(PMLOG pmlog, const char *file, int line, const char *fmt, .
     int cch;
     va_start(va, fmt);
     mlog_lock(pmlog);
-    if (pmlog->bEnabled)
+    if (mlog_is_enabled())
     {
 #ifdef MLOG_USE_STRSAFE
         StringCchPrintfA(buf, _countof(buf), "%s (%d): ", file, line);
@@ -302,7 +296,7 @@ void mlog_trace_ex_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt,
     int cch;
     va_start(va, fmt);
     mlog_lock(pmlog);
-    if (pmlog->bEnabled)
+    if (mlog_is_enabled())
     {
 #ifdef MLOG_USE_STRSAFE
         StringCchPrintfW(buf, _countof(buf), L"%s (%d): ", file, line);
