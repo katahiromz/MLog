@@ -11,6 +11,7 @@
 // Option: MLOG_CONSOLE_OUTPUT: (undefined)
 // Option: MLOG_FILE_OUTPUT: (undefined)
 // Option: MLOG_UTF16_OUTPUT: (undefined)
+// Option: MLOG_REGKEY: (undefined)
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -154,6 +155,33 @@ LPCTSTR mlog_log_file(void)
     if (!pmlog)
         return NULL;
     return pmlog->log_filename;
+}
+
+static inline
+BOOL mlog_is_enabled(void)
+{
+    PMLOG pmlog = mlog_init();
+    if (!pmlog)
+        return FALSE;
+    if (!pmlog->bEnabled)
+        return FALSE;
+#ifdef MLOG_REGKEY
+    {
+        HKEY hKey;
+        DWORD bDisabled = FALSE;
+        LONG error = RegOpenKeyEx(HKEY_CURRENT_USER, MLOG_REGKEY, 0, KEY_READ, &hKey);
+        if (!error)
+        {
+            DWORD cbValue = sizeof(bDisabled);
+            RegQueryValueEx(hKey, TEXT("DisableLogging"), NULL, NULL,
+                            (BYTE*)&bDisabled, &cbValue);
+            RegCloseKey(hKey);
+        }
+        if (bDisabled)
+            return FALSE;
+    }
+#endif
+    return TRUE;
 }
 
 //////////////////////////////////////////////////////////////////////////////
