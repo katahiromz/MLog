@@ -91,7 +91,7 @@ typedef struct MLOG
 // mlog_...
 
 static inline
-PMLOG mlog_init(BOOL *pfInitialEnabled)
+PMLOG mlog_init(void)
 {
 #ifdef __cplusplus
     static MLOG s_mlog;
@@ -112,11 +112,7 @@ PMLOG mlog_init(BOOL *pfInitialEnabled)
     ExpandEnvironmentStrings(MLOG_FILE_OUTPUT, s_mlog.log_filename, _countof(s_mlog.log_filename));
 #endif
 
-    if (pfInitialEnabled)
-        s_mlog.bEnabled = *pfInitialEnabled;
-    else
-        s_mlog.bEnabled = TRUE;
-
+    s_mlog.bEnabled = TRUE;
     s_mlog.bInit = TRUE;
     return &s_mlog;
 }
@@ -124,7 +120,7 @@ PMLOG mlog_init(BOOL *pfInitialEnabled)
 static inline
 void mlog_free(void)
 {
-    PMLOG pmlog = mlog_init(NULL);
+    PMLOG pmlog = mlog_init();
     if (!pmlog->bInit)
         return;
     DeleteCriticalSection(&pmlog->csLock);
@@ -134,7 +130,7 @@ void mlog_free(void)
 static inline
 void mlog_enable(BOOL bEnabled)
 {
-    PMLOG pmlog = mlog_init(NULL);
+    PMLOG pmlog = mlog_init();
     if (pmlog)
         pmlog->bEnabled = bEnabled;
 }
@@ -298,10 +294,10 @@ void mlog_trace_ex_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt,
 #define MLOG_WIDE_(str) MLOG_WIDE(str)
 
 #define mlog_trace_a(fmt, ...) \
-    mlog_trace_ex_a(mlog_init(NULL), __FILE__ , __LINE__, fmt, ## __VA_ARGS__)
+    mlog_trace_ex_a(mlog_init(), __FILE__ , __LINE__, fmt, ## __VA_ARGS__)
 
 #define mlog_trace_w(fmt, ...) \
-    mlog_trace_ex_w(mlog_init(NULL), MLOG_WIDE_(__FILE__), __LINE__, fmt, ## __VA_ARGS__)
+    mlog_trace_ex_w(mlog_init(), MLOG_WIDE_(__FILE__), __LINE__, fmt, ## __VA_ARGS__)
 
 #ifdef UNICODE
     #define mlog_trace mlog_trace_w
