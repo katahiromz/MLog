@@ -14,7 +14,7 @@ int main(void)
 {
     mlog_trace_a("mlog_trace_a: TEST\n");
     mlog_trace_w(L"mlog_trace_w: TEST\n");
-    mlog_trace(TEXT("mlog_trace_t: TEST\n"));
+    mlog_trace(TEXT("mlog_trace: TEST\n"));
 #ifdef UNICODE
     mlog_trace(L"mlog_trace: TEST\n");
 #else

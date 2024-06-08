@@ -2,7 +2,7 @@
 // License: MIT
 #pragma once
 
-#define MLOG_VERSION 1
+#define MLOG_VERSION 2
 
 // Option: MLOG_MAX_BUF: 1024
 // Option: MLOG_CODEPAGE: CP_UTF8
@@ -69,6 +69,7 @@ typedef struct MLOG
     BOOL bInit;
     CRITICAL_SECTION csLock;
     TCHAR log_filename[MAX_PATH];
+    BOOL bEnabled;
 
 #ifdef __cplusplus
     MLOG()
@@ -90,7 +91,7 @@ typedef struct MLOG
 // mlog_...
 
 static inline
-PMLOG mlog_init(void)
+PMLOG mlog_init(BOOL *pfInitialEnabled)
 {
 #ifdef __cplusplus
     static MLOG s_mlog;
@@ -111,6 +112,11 @@ PMLOG mlog_init(void)
     ExpandEnvironmentStrings(MLOG_FILE_OUTPUT, s_mlog.log_filename, _countof(s_mlog.log_filename));
 #endif
 
+    if (pfInitialEnabled)
+        s_mlog.bEnabled = *pfInitialEnabled;
+    else
+        s_mlog.bEnabled = TRUE;
+
     s_mlog.bInit = TRUE;
     return &s_mlog;
 }
@@ -118,12 +124,19 @@ PMLOG mlog_init(void)
 static inline
 void mlog_free(void)
 {
-    PMLOG pmlog = mlog_init();
-    if (pmlog->bInit)
-    {
-        DeleteCriticalSection(&pmlog->csLock);
-        pmlog->bInit = FALSE;
-    }
+    PMLOG pmlog = mlog_init(NULL);
+    if (!pmlog->bInit)
+        return;
+    DeleteCriticalSection(&pmlog->csLock);
+    pmlog->bInit = FALSE;
+}
+
+static inline
+void mlog_enable(BOOL bEnabled)
+{
+    PMLOG pmlog = mlog_init(NULL);
+    if (pmlog)
+        pmlog->bEnabled = bEnabled;
 }
 
 static inline
@@ -148,6 +161,9 @@ void mlog_write_a(PMLOG pmlog, const char *ptr)
 #ifdef MLOG_UTF16_OUTPUT
     WCHAR buf[MLOG_MAX_BUF];
 #endif
+
+    if (!pmlog->bEnabled)
+        return;
 
 #ifdef MLOG_DEBUG_OUTPUT
     OutputDebugStringA(ptr);
@@ -182,6 +198,9 @@ void mlog_write_w(PMLOG pmlog, const WCHAR *ptr)
 #ifndef MLOG_UTF16_OUTPUT
     CHAR buf[MLOG_MAX_BUF];
 #endif
+
+    if (!pmlog->bEnabled)
+        return;
 
 #ifdef MLOG_DEBUG_OUTPUT
     OutputDebugStringW(ptr);
@@ -226,6 +245,7 @@ void mlog_trace_ex_a(PMLOG pmlog, const char *file, int line, const char *fmt, .
     int cch;
     va_start(va, fmt);
     mlog_lock(pmlog);
+    if (pmlog->bEnabled)
     {
 #ifdef MLOG_USE_STRSAFE
         StringCchPrintfA(buf, _countof(buf), "%s (%d): ", file, line);
@@ -249,6 +269,7 @@ void mlog_trace_ex_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt,
     int cch;
     va_start(va, fmt);
     mlog_lock(pmlog);
+    if (pmlog->bEnabled)
     {
 #ifdef MLOG_USE_STRSAFE
         StringCchPrintfW(buf, _countof(buf), L"%s (%d): ", file, line);
@@ -277,10 +298,10 @@ void mlog_trace_ex_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt,
 #define MLOG_WIDE_(str) MLOG_WIDE(str)
 
 #define mlog_trace_a(fmt, ...) \
-    mlog_trace_ex_a(mlog_init(), __FILE__ , __LINE__, fmt, ## __VA_ARGS__)
+    mlog_trace_ex_a(mlog_init(NULL), __FILE__ , __LINE__, fmt, ## __VA_ARGS__)
 
 #define mlog_trace_w(fmt, ...) \
-    mlog_trace_ex_w(mlog_init(), MLOG_WIDE_(__FILE__), __LINE__, fmt, ## __VA_ARGS__)
+    mlog_trace_ex_w(mlog_init(NULL), MLOG_WIDE_(__FILE__), __LINE__, fmt, ## __VA_ARGS__)
 
 #ifdef UNICODE
     #define mlog_trace mlog_trace_w
