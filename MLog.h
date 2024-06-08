@@ -216,10 +216,10 @@ void mlog_write_w(PMLOG pmlog, const WCHAR *ptr)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-// mlog_printf...
+// mlog_trace_ex...
 
 static inline
-void mlog_printf_a(PMLOG pmlog, const char *file, int line, const char *fmt, ...)
+void mlog_trace_ex_a(PMLOG pmlog, const char *file, int line, const char *fmt, ...)
 {
     CHAR buf[MLOG_MAX_BUF];
     va_list va;
@@ -242,7 +242,7 @@ void mlog_printf_a(PMLOG pmlog, const char *file, int line, const char *fmt, ...
 }
 
 static inline
-void mlog_printf_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt, ...)
+void mlog_trace_ex_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt, ...)
 {
     WCHAR buf[MLOG_MAX_BUF];
     va_list va;
@@ -265,9 +265,9 @@ void mlog_printf_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt, .
 }
 
 #ifdef UNICODE
-    #define mlog_printf mlog_printf_w
+    #define mlog_trace_ex mlog_trace_ex_w
 #else
-    #define mlog_printf mlog_printf_a
+    #define mlog_trace_ex mlog_trace_ex_a
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -277,10 +277,10 @@ void mlog_printf_w(PMLOG pmlog, const WCHAR *file, int line, const WCHAR *fmt, .
 #define MLOG_WIDE_(str) MLOG_WIDE(str)
 
 #define mlog_trace_a(fmt, ...) \
-    mlog_printf_a(mlog_init(), __FILE__ , __LINE__, fmt, ## __VA_ARGS__)
+    mlog_trace_ex_a(mlog_init(), __FILE__ , __LINE__, fmt, ## __VA_ARGS__)
 
 #define mlog_trace_w(fmt, ...) \
-    mlog_printf_w(mlog_init(), MLOG_WIDE_(__FILE__), __LINE__, fmt, ## __VA_ARGS__)
+    mlog_trace_ex_w(mlog_init(), MLOG_WIDE_(__FILE__), __LINE__, fmt, ## __VA_ARGS__)
 
 #ifdef UNICODE
     #define mlog_trace mlog_trace_w
