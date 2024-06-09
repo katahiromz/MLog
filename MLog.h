@@ -168,6 +168,19 @@ BOOL mlog_is_enabled(void)
 #ifdef MLOG_REGKEY
     {
         HKEY hKey;
+#ifdef MLOG_OPTIN_LOGGING
+        DWORD bEnabled = FALSE;
+        LONG error = RegOpenKeyEx(HKEY_CURRENT_USER, MLOG_REGKEY, 0, KEY_READ, &hKey);
+        if (!error)
+        {
+            DWORD cbValue = sizeof(bEnabled);
+            RegQueryValueEx(hKey, TEXT("EnableLogging"), NULL, NULL,
+                            (BYTE*)&bEnabled, &cbValue);
+            RegCloseKey(hKey);
+        }
+        if (!bEnabled)
+            return FALSE;
+#else
         DWORD bDisabled = FALSE;
         LONG error = RegOpenKeyEx(HKEY_CURRENT_USER, MLOG_REGKEY, 0, KEY_READ, &hKey);
         if (!error)
@@ -179,6 +192,7 @@ BOOL mlog_is_enabled(void)
         }
         if (bDisabled)
             return FALSE;
+#endif
     }
 #endif
     return TRUE;
